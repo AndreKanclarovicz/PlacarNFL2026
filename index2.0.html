@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Placar NFL 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0C1C15; --panel:#132A20; --panel-alt:#1B392A; --line:rgba(243,241,231,.12);
+  --chalk:#F3F1E7; --muted:#8FA396; --amber:#E3A23B; --amber-ink:#241804;
+  --good:#4FB37A; --bad:#DE645A; --pending:#6C7F73;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px); height:100%;}
+*{box-sizing:border-box;}
+body{
+  margin:0; height:100%; background:var(--bg); color:var(--chalk);
+  font-family:'Inter',-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+  display:flex; flex-direction:column;
+}
+.display{font-family:'Oswald',Impact,'Arial Narrow',sans-serif;}
+header{
+  padding:calc(14px + env(safe-area-inset-top,0px)) calc(16px + env(safe-area-inset-left,0px)) 0;
+  background:linear-gradient(180deg,#0F241A 0%,#0C1C15 100%);
+  color:var(--chalk); position:sticky; top:0; z-index:10;
+  border-bottom:2px solid var(--line);
+}
+h1{
+  font-size:1.3rem; margin:0 0 12px 0; font-weight:600; letter-spacing:.04em;
+  text-transform:uppercase; color:var(--chalk);
+}
+h1 span{color:var(--amber);}
+.hash{
+  height:6px; margin:0 -100vw 10px; background-image:repeating-linear-gradient(
+    90deg, transparent, transparent 22px, rgba(227,162,59,.35) 22px, rgba(227,162,59,.35) 24px
+  );
+  opacity:.6;
+}
+.weekbar{display:flex; gap:6px; overflow-x:auto; padding-bottom:12px;}
+.weekbar button{
+  flex:0 0 auto; padding:7px 13px; border-radius:3px; border:1px solid var(--line);
+  background:transparent; color:var(--muted); font-size:.78rem; cursor:pointer;
+  font-family:'Oswald',sans-serif; letter-spacing:.02em;
+}
+.weekbar button.active{background:var(--amber); color:var(--amber-ink); border-color:var(--amber); font-weight:600;}
+main{flex:1; overflow-y:auto; padding:16px calc(14px + env(safe-area-inset-left,0px)) 28px;}
+.section-title{
+  font-size:.72rem; font-weight:500; color:var(--muted);
+  letter-spacing:.03em; margin:2px 2px 10px;
+}
+.section-title.season{margin-top:26px; padding-top:16px; border-top:1px solid var(--line);}
+.scoreboard{
+  display:flex; align-items:baseline; gap:0; margin-bottom:18px;
+  background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:12px 4px;
+}
+.sb-stat{flex:1; text-align:center; position:relative;}
+.sb-stat + .sb-stat::before{
+  content:""; position:absolute; left:0; top:15%; bottom:15%; width:1px; background:var(--line);
+}
+.sb-stat b{
+  display:block; font-family:'Oswald',sans-serif; font-weight:600; font-size:1.7rem;
+  font-variant-numeric:tabular-nums; line-height:1;
+}
+.sb-stat span{font-size:.68rem; color:var(--muted); display:block; margin-top:4px;}
+.sb-stat.good b{color:var(--good);}
+.sb-stat.bad b{color:var(--bad);}
+.sb-stat.pct b{color:var(--amber);}
+.table-wrap{
+  overflow-x:auto; border:1px solid var(--line); border-radius:6px; background:var(--panel);
+}
+table{border-collapse:collapse; width:100%; min-width:540px;}
+thead th{
+  background:var(--panel-alt); color:var(--muted); font-size:.7rem; font-weight:500;
+  text-align:left; padding:10px 12px; position:sticky; top:0; white-space:nowrap;
+  border-bottom:1px solid var(--line); letter-spacing:.02em;
+}
+tbody td{
+  padding:9px 12px; font-size:.86rem; border-bottom:1px solid var(--line); vertical-align:middle;
+}
+tbody tr:last-child td{border-bottom:none;}
+tbody tr:nth-child(even) td.team{background:rgba(255,255,255,.02);}
+td.team input{
+  width:100%; border:none; background:transparent; color:var(--chalk); font-size:.86rem; padding:3px 0;
+  font-family:'Inter',sans-serif;
+}
+td.team input::placeholder{color:var(--muted);}
+td.team input:focus{outline:none; border-bottom:1px solid var(--amber);}
+.pick-chips{display:flex; gap:5px;}
+.pick-chips button{
+  border:1px solid var(--line); background:transparent; color:var(--muted);
+  border-radius:3px; padding:6px 9px; font-size:.72rem; cursor:pointer; white-space:nowrap;
+  font-family:'Inter',sans-serif;
+}
+.pick-chips button.picked{background:var(--amber); border-color:var(--amber); color:var(--amber-ink); font-weight:600;}
+.result-badge{
+  border:none; background:transparent; cursor:pointer; font-size:.78rem; font-weight:500;
+  padding:5px 10px; border-radius:3px; white-space:nowrap; font-family:'Inter',sans-serif;
+}
+.result-badge.correct{color:var(--good); background:rgba(79,179,122,.12);}
+.result-badge.wrong{color:var(--bad); background:rgba(222,100,90,.12);}
+.result-badge.pending{color:var(--pending); font-weight:400;}
+.remove{background:none; border:none; color:var(--muted); font-size:1rem; cursor:pointer; padding:2px 6px;}
+.empty{color:var(--muted); text-align:center; padding:32px 10px; font-size:.85rem;}
+</style>
+</head>
+<body>
+<header>
+  <h1>🏈 Placar NFL <span>2026</span></h1>
+  <div class="hash"></div>
+  <div class="weekbar" id="weekbar"></div>
+</header>
+<main>
+  <div class="section-title" id="weekStatsTitle">Estatísticas da semana</div>
+  <div class="scoreboard" id="statsWeek"></div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Visitante</th>
+          <th>Mandante</th>
+          <th>Meu palpite</th>
+          <th>Resultado</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="gamesBody"></tbody>
+    </table>
+  </div>
+  <div class="section-title season">Estatísticas da temporada inteira</div>
+  <div class="scoreboard" id="statsSeason"></div>
+</main>
+
+
+<script>
+const STORAGE_KEY = "nfl_picks_data_v2";
+const SEED_DATA = {"currentWeek": 1, "games": [{"id": "g1", "week": 1, "teamA": "Patriots", "teamB": "Seahawks", "pickWinner": "teamB", "resultStatus": "correct"}, {"id": "g2", "week": 1, "teamA": "49ers", "teamB": "Rams", "pickWinner": "teamB", "resultStatus": "wrong"}, {"id": "g3", "week": 1, "teamA": "Bears", "teamB": "Panthers", "pickWinner": "teamA", "resultStatus": "correct"}, {"id": "g4", "week": 1, "teamA": "Buccaneers", "teamB": "Bengals", "pickWinner": "teamB", "resultStatus": "correct"}, {"id": "g5", "week": 1, "teamA": "Saints", "teamB": "Lions", "pickWinner": "teamB", "resultStatus": "correct"}, {"id": "g6", "week": 1, "teamA": "Bills", "teamB": "Texans", "pickWinner": "teamA", "resultStatus": "correct"}, {"id": "g7", "week": 1, "teamA": "Ravens", "teamB": "Colts", "pickWinner": "teamA", "resultStatus": "correct"}, {"id": "g8", "week": 1, "teamA": "Browns", "teamB": "Jaguars", "pickWinner": "teamB", "resultStatus": "correct"}, {"id": "g9", "week": 1, "teamA": "Falcons", "teamB": "Steelers", "pickWinner": "teamB", "resultStatus": "correct"}, {"id": "g10", "week": 1, "teamA": "Jets", "teamB": "Titans", "pickWinner": "teamB", "resultStatus": "wrong"}, {"id": "g11", "week": 1, "teamA": "Cardinals", "teamB": "Chargers", "pickWinner": "teamB", "resultStatus": "wrong"}, {"id": "g12", "week": 1, "teamA": "Dolphins", "teamB": "Raiders", "pickWinner": "teamB", "resultStatus": "correct"}, {"id": "g13", "week": 1, "teamA": "Packers", "teamB": "Vikings", "pickWinner": "teamA", "resultStatus": "wrong"}, {"id": "g14", "week": 1, "teamA": "Commanders", "teamB": "Eagles", "pickWinner": "teamB", "resultStatus": "correct"}, {"id": "g15", "week": 1, "teamA": "Cowboys", "teamB": "Giants", "pickWinner": "teamA", "resultStatus": "wrong"}, {"id": "g16", "week": 1, "teamA": "Broncos", "teamB": "Chiefs", "pickWinner": "teamA", "resultStatus": "wrong"}, {"id": "g17", "week": 2, "teamA": "Lions", "teamB": "Bills", "pickWinner": "teamB", "resultStatus": "correct"}, {"id": "g18", "week": 2, "teamA": "Panthers", "teamB": "Falcons", "pickWinner": "teamA", "resultStatus": "correct"}, {"id": "g19", "week": 2, "teamA": "Saints", "teamB": "Ravens", "pickWinner": "teamB", "resultStatus": "wrong"}, {"id": "g20", "week": 2, "teamA": "Vikings", "teamB": "Bears", "pickWinner": "teamB", "resultStatus": "wrong"}, {"id": "g21", "week": 2, "teamA": "Bengals", "teamB": "Texans", "pickWinner": "teamB", "resultStatus": "wrong"}, {"id": "g22", "week": 2, "teamA": "Steelers", "teamB": "Patriots", "pickWinner": "teamB", "resultStatus": "correct"}, {"id": "g23", "week": 2, "teamA": "Packers", "teamB": "Jets", "pickWinner": "teamA", "resultStatus": "correct"}, {"id": "g24", "week": 2, "teamA": "Browns", "teamB": "Buccaneers", "pickWinner": "teamB", "resultStatus": "wrong"}, {"id": "g25", "week": 2, "teamA": "Eagles", "teamB": "Titans", "pickWinner": "teamA", "resultStatus": "correct"}, {"id": "g26", "week": 2, "teamA": "Jaguars", "teamB": "Broncos", "pickWinner": "teamB", "resultStatus": "correct"}, {"id": "g27", "week": 2, "teamA": "Raiders", "teamB": "Chargers", "pickWinner": "teamA", "resultStatus": "correct"}, {"id": "g28", "week": 2, "teamA": "Seahawks", "teamB": "Cardinals", "pickWinner": "teamA", "resultStatus": "correct"}, {"id": "g29", "week": 2, "teamA": "Commanders", "teamB": "Cowboys", "pickWinner": "teamA", "resultStatus": "wrong"}, {"id": "g30", "week": 2, "teamA": "Dolphins", "teamB": "49ers", "pickWinner": "teamB", "resultStatus": "correct"}, {"id": "g31", "week": 2, "teamA": "Colts", "teamB": "Chiefs", "pickWinner": "teamB", "resultStatus": "correct"}, {"id": "g32", "week": 2, "teamA": "Giants", "teamB": "Rams", "pickWinner": "teamB", "resultStatus": "correct"}, {"id": "g33", "week": 3, "teamA": "Falcons", "teamB": "Packers", "pickWinner": "teamB", "resultStatus": null}, {"id": "g34", "week": 3, "teamA": "Chargers", "teamB": "Bills", "pickWinner": "teamB", "resultStatus": null}, {"id": "g35", "week": 3, "teamA": "Panthers", "teamB": "Browns", "pickWinner": "teamA", "resultStatus": null}, {"id": "g36", "week": 3, "teamA": "Jets", "teamB": "Lions", "pickWinner": "teamB", "resultStatus": null}, {"id": "g37", "week": 3, "teamA": "Texans", "teamB": "Colts", "pickWinner": "teamB", "resultStatus": null}, {"id": "g38", "week": 3, "teamA": "Patriots", "teamB": "Jaguars", "pickWinner": "teamA", "resultStatus": null}, {"id": "g39", "week": 3, "teamA": "Chiefs", "teamB": "Dolphins", "pickWinner": "teamA", "resultStatus": null}, {"id": "g40", "week": 3, "teamA": "Titans", "teamB": "Giants", "pickWinner": "teamB", "resultStatus": null}, {"id": "g41", "week": 3, "teamA": "Bengals", "teamB": "Steelers", "pickWinner": "teamA", "resultStatus": null}, {"id": "g42", "week": 3, "teamA": "Seahawks", "teamB": "Commanders", "pickWinner": "teamA", "resultStatus": null}, {"id": "g43", "week": 3, "teamA": "Cardinals", "teamB": "49ers", "pickWinner": "teamB", "resultStatus": null}, {"id": "g44", "week": 3, "teamA": "Vikings", "teamB": "Buccaneers", "pickWinner": "teamA", "resultStatus": null}, {"id": "g45", "week": 3, "teamA": "Raiders", "teamB": "Saints", "pickWinner": "teamA", "resultStatus": null}, {"id": "g46", "week": 3, "teamA": "Ravens", "teamB": "Cowboys", "pickWinner": "teamA", "resultStatus": null}, {"id": "g47", "week": 3, "teamA": "Rams", "teamB": "Broncos", "pickWinner": "teamA", "resultStatus": null}, {"id": "g48", "week": 3, "teamA": "Eagles", "teamB": "Bears", "pickWinner": "teamA", "resultStatus": null}, {"id": "g49", "week": 4, "teamA": "Steelers", "teamB": "Browns", "pickWinner": null, "resultStatus": null}, {"id": "g50", "week": 4, "teamA": "Colts", "teamB": "Commanders", "pickWinner": null, "resultStatus": null}, {"id": "g51", "week": 4, "teamA": "Titans", "teamB": "Ravens", "pickWinner": null, "resultStatus": null}, {"id": "g52", "week": 4, "teamA": "Patriots", "teamB": "Bills", "pickWinner": null, "resultStatus": null}, {"id": "g53", "week": 4, "teamA": "Jets", "teamB": "Bears", "pickWinner": null, "resultStatus": null}, {"id": "g54", "week": 4, "teamA": "Jaguars", "teamB": "Bengals", "pickWinner": null, "resultStatus": null}, {"id": "g55", "week": 4, "teamA": "Cowboys", "teamB": "Texans", "pickWinner": null, "resultStatus": null}, {"id": "g56", "week": 4, "teamA": "Cardinals", "teamB": "Giants", "pickWinner": null, "resultStatus": null}, {"id": "g57", "week": 4, "teamA": "Rams", "teamB": "Eagles", "pickWinner": null, "resultStatus": null}, {"id": "g58", "week": 4, "teamA": "Packers", "teamB": "Buccaneers", "pickWinner": null, "resultStatus": null}, {"id": "g59", "week": 4, "teamA": "Dolphins", "teamB": "Vikings", "pickWinner": null, "resultStatus": null}, {"id": "g60", "week": 4, "teamA": "Chiefs", "teamB": "Raiders", "pickWinner": null, "resultStatus": null}, {"id": "g61", "week": 4, "teamA": "Chargers", "teamB": "Seahawks", "pickWinner": null, "resultStatus": null}, {"id": "g62", "week": 4, "teamA": "Broncos", "teamB": "49ers", "pickWinner": null, "resultStatus": null}, {"id": "g63", "week": 4, "teamA": "Lions", "teamB": "Panthers", "pickWinner": null, "resultStatus": null}, {"id": "g64", "week": 4, "teamA": "Falcons", "teamB": "Saints", "pickWinner": null, "resultStatus": null}, {"id": "g65", "week": 5, "teamA": "Buccaneers", "teamB": "Cowboys", "pickWinner": null, "resultStatus": null}, {"id": "g66", "week": 5, "teamA": "Eagles", "teamB": "Jaguars", "pickWinner": null, "resultStatus": null}, {"id": "g67", "week": 5, "teamA": "Bengals", "teamB": "Dolphins", "pickWinner": null, "resultStatus": null}, {"id": "g68", "week": 5, "teamA": "Raiders", "teamB": "Patriots", "pickWinner": null, "resultStatus": null}, {"id": "g69", "week": 5, "teamA": "Vikings", "teamB": "Saints", "pickWinner": null, "resultStatus": null}, {"id": "g70", "week": 5, "teamA": "Browns", "teamB": "Jets", "pickWinner": null, "resultStatus": null}, {"id": "g71", "week": 5, "teamA": "Colts", "teamB": "Steelers", "pickWinner": null, "resultStatus": null}, {"id": "g72", "week": 5, "teamA": "Texans", "teamB": "Titans", "pickWinner": null, "resultStatus": null}, {"id": "g73", "week": 5, "teamA": "Giants", "teamB": "Commanders", "pickWinner": null, "resultStatus": null}, {"id": "g74", "week": 5, "teamA": "Broncos", "teamB": "Chargers", "pickWinner": null, "resultStatus": null}, {"id": "g75", "week": 5, "teamA": "Lions", "teamB": "Cardinals", "pickWinner": null, "resultStatus": null}, {"id": "g76", "week": 5, "teamA": "Bears", "teamB": "Packers", "pickWinner": null, "resultStatus": null}, {"id": "g77", "week": 5, "teamA": "49ers", "teamB": "Seahawks", "pickWinner": null, "resultStatus": null}, {"id": "g78", "week": 5, "teamA": "Ravens", "teamB": "Falcons", "pickWinner": null, "resultStatus": null}, {"id": "g79", "week": 5, "teamA": "Bills", "teamB": "Rams", "pickWinner": null, "resultStatus": null}, {"id": "g80", "week": 6, "teamA": "Seahawks", "teamB": "Broncos", "pickWinner": null, "resultStatus": null}, {"id": "g81", "week": 6, "teamA": "Texans", "teamB": "Jaguars", "pickWinner": null, "resultStatus": null}, {"id": "g82", "week": 6, "teamA": "Bears", "teamB": "Falcons", "pickWinner": null, "resultStatus": null}, {"id": "g83", "week": 6, "teamA": "Ravens", "teamB": "Browns", "pickWinner": null, "resultStatus": null}, {"id": "g84", "week": 6, "teamA": "Titans", "teamB": "Colts", "pickWinner": null, "resultStatus": null}, {"id": "g85", "week": 6, "teamA": "Jets", "teamB": "Patriots", "pickWinner": null, "resultStatus": null}, {"id": "g86", "week": 6, "teamA": "Saints", "teamB": "Giants", "pickWinner": null, "resultStatus": null}, {"id": "g87", "week": 6, "teamA": "Panthers", "teamB": "Eagles", "pickWinner": null, "resultStatus": null}, {"id": "g88", "week": 6, "teamA": "Steelers", "teamB": "Buccaneers", "pickWinner": null, "resultStatus": null}, {"id": "g89", "week": 6, "teamA": "Cardinals", "teamB": "Rams", "pickWinner": null, "resultStatus": null}, {"id": "g90", "week": 6, "teamA": "Chargers", "teamB": "Chiefs", "pickWinner": null, "resultStatus": null}, {"id": "g91", "week": 6, "teamA": "Bills", "teamB": "Raiders", "pickWinner": null, "resultStatus": null}, {"id": "g92", "week": 6, "teamA": "Cowboys", "teamB": "Packers", "pickWinner": null, "resultStatus": null}, {"id": "g93", "week": 6, "teamA": "Commanders", "teamB": "49ers", "pickWinner": null, "resultStatus": null}, {"id": "g94", "week": 7, "teamA": "Patriots", "teamB": "Bears", "pickWinner": null, "resultStatus": null}, {"id": "g95", "week": 7, "teamA": "Steelers", "teamB": "Saints", "pickWinner": null, "resultStatus": null}, {"id": "g96", "week": 7, "teamA": "49ers", "teamB": "Falcons", "pickWinner": null, "resultStatus": null}, {"id": "g97", "week": 7, "teamA": "Bengals", "teamB": "Ravens", "pickWinner": null, "resultStatus": null}, {"id": "g98", "week": 7, "teamA": "Buccaneers", "teamB": "Panthers", "pickWinner": null, "resultStatus": null}, {"id": "g99", "week": 7, "teamA": "Giants", "teamB": "Texans", "pickWinner": null, "resultStatus": null}, {"id": "g100", "week": 7, "teamA": "Colts", "teamB": "Vikings", "pickWinner": null, "resultStatus": null}, {"id": "g101", "week": 7, "teamA": "Dolphins", "teamB": "Jets", "pickWinner": null, "resultStatus": null}, {"id": "g102", "week": 7, "teamA": "Browns", "teamB": "Titans", "pickWinner": null, "resultStatus": null}, {"id": "g103", "week": 7, "teamA": "Broncos", "teamB": "Cardinals", "pickWinner": null, "resultStatus": null}, {"id": "g104", "week": 7, "teamA": "Packers", "teamB": "Lions", "pickWinner": null, "resultStatus": null}, {"id": "g105", "week": 7, "teamA": "Rams", "teamB": "Raiders", "pickWinner": null, "resultStatus": null}, {"id": "g106", "week": 7, "teamA": "Chiefs", "teamB": "Seahawks", "pickWinner": null, "resultStatus": null}, {"id": "g107", "week": 7, "teamA": "Cowboys", "teamB": "Eagles", "pickWinner": null, "resultStatus": null}, {"id": "g108", "week": 8, "teamA": "Panthers", "teamB": "Packers", "pickWinner": null, "resultStatus": null}, {"id": "g109", "week": 8, "teamA": "Ravens", "teamB": "Bills", "pickWinner": null, "resultStatus": null}, {"id": "g110", "week": 8, "teamA": "Titans", "teamB": "Bengals", "pickWinner": null, "resultStatus": null}, {"id": "g111", "week": 8, "teamA": "Cardinals", "teamB": "Cowboys", "pickWinner": null, "resultStatus": null}, {"id": "g112", "week": 8, "teamA": "Vikings", "teamB": "Lions", "pickWinner": null, "resultStatus": null}, {"id": "g113", "week": 8, "teamA": "Colts", "teamB": "Jaguars", "pickWinner": null, "resultStatus": null}, {"id": "g114", "week": 8, "teamA": "Raiders", "teamB": "Jets", "pickWinner": null, "resultStatus": null}, {"id": "g115", "week": 8, "teamA": "Browns", "teamB": "Steelers", "pickWinner": null, "resultStatus": null}, {"id": "g116", "week": 8, "teamA": "Falcons", "teamB": "Buccaneers", "pickWinner": null, "resultStatus": null}, {"id": "g117", "week": 8, "teamA": "Chargers", "teamB": "Rams", "pickWinner": null, "resultStatus": null}, {"id": "g118", "week": 8, "teamA": "Chiefs", "teamB": "Broncos", "pickWinner": null, "resultStatus": null}, {"id": "g119", "week": 8, "teamA": "Patriots", "teamB": "Dolphins", "pickWinner": null, "resultStatus": null}, {"id": "g120", "week": 8, "teamA": "Eagles", "teamB": "Commanders", "pickWinner": null, "resultStatus": null}, {"id": "g121", "week": 8, "teamA": "Bears", "teamB": "Seahawks", "pickWinner": null, "resultStatus": null}, {"id": "g122", "week": 9, "teamA": "Jaguars", "teamB": "Ravens", "pickWinner": null, "resultStatus": null}, {"id": "g123", "week": 9, "teamA": "Bengals", "teamB": "Falcons", "pickWinner": null, "resultStatus": null}, {"id": "g124", "week": 9, "teamA": "Broncos", "teamB": "Panthers", "pickWinner": null, "resultStatus": null}, {"id": "g125", "week": 9, "teamA": "Cowboys", "teamB": "Colts", "pickWinner": null, "resultStatus": null}, {"id": "g126", "week": 9, "teamA": "Jets", "teamB": "Chiefs", "pickWinner": null, "resultStatus": null}, {"id": "g127", "week": 9, "teamA": "Lions", "teamB": "Dolphins", "pickWinner": null, "resultStatus": null}, {"id": "g128", "week": 9, "teamA": "Browns", "teamB": "Saints", "pickWinner": null, "resultStatus": null}, {"id": "g129", "week": 9, "teamA": "Giants", "teamB": "Eagles", "pickWinner": null, "resultStatus": null}, {"id": "g130", "week": 9, "teamA": "Rams", "teamB": "Commanders", "pickWinner": null, "resultStatus": null}, {"id": "g131", "week": 9, "teamA": "Texans", "teamB": "Chargers", "pickWinner": null, "resultStatus": null}, {"id": "g132", "week": 9, "teamA": "Raiders", "teamB": "49ers", "pickWinner": null, "resultStatus": null}, {"id": "g133", "week": 9, "teamA": "Packers", "teamB": "Patriots", "pickWinner": null, "resultStatus": null}, {"id": "g134", "week": 9, "teamA": "Cardinals", "teamB": "Seahawks", "pickWinner": null, "resultStatus": null}, {"id": "g135", "week": 9, "teamA": "Buccaneers", "teamB": "Bears", "pickWinner": null, "resultStatus": null}, {"id": "g136", "week": 9, "teamA": "Bills", "teamB": "Vikings", "pickWinner": null, "resultStatus": null}, {"id": "g137", "week": 10, "teamA": "Commanders", "teamB": "Giants", "pickWinner": null, "resultStatus": null}, {"id": "g138", "week": 10, "teamA": "Patriots", "teamB": "Lions", "pickWinner": null, "resultStatus": null}, {"id": "g139", "week": 10, "teamA": "Chiefs", "teamB": "Falcons", "pickWinner": null, "resultStatus": null}, {"id": "g140", "week": 10, "teamA": "Texans", "teamB": "Browns", "pickWinner": null, "resultStatus": null}, {"id": "g141", "week": 10, "teamA": "Vikings", "teamB": "Packers", "pickWinner": null, "resultStatus": null}, {"id": "g142", "week": 10, "teamA": "Dolphins", "teamB": "Colts", "pickWinner": null, "resultStatus": null}, {"id": "g143", "week": 10, "teamA": "Panthers", "teamB": "Saints", "pickWinner": null, "resultStatus": null}, {"id": "g144", "week": 10, "teamA": "Bills", "teamB": "Jets", "pickWinner": null, "resultStatus": null}, {"id": "g145", "week": 10, "teamA": "Jaguars", "teamB": "Titans", "pickWinner": null, "resultStatus": null}, {"id": "g146", "week": 10, "teamA": "Rams", "teamB": "Cardinals", "pickWinner": null, "resultStatus": null}, {"id": "g147", "week": 10, "teamA": "Seahawks", "teamB": "Raiders", "pickWinner": null, "resultStatus": null}, {"id": "g148", "week": 10, "teamA": "49ers", "teamB": "Cowboys", "pickWinner": null, "resultStatus": null}, {"id": "g149", "week": 10, "teamA": "Steelers", "teamB": "Bengals", "pickWinner": null, "resultStatus": null}, {"id": "g150", "week": 10, "teamA": "Chargers", "teamB": "Ravens", "pickWinner": null, "resultStatus": null}, {"id": "g151", "week": 11, "teamA": "Colts", "teamB": "Texans", "pickWinner": null, "resultStatus": null}, {"id": "g152", "week": 11, "teamA": "Dolphins", "teamB": "Bills", "pickWinner": null, "resultStatus": null}, {"id": "g153", "week": 11, "teamA": "Ravens", "teamB": "Panthers", "pickWinner": null, "resultStatus": null}, {"id": "g154", "week": 11, "teamA": "Saints", "teamB": "Bears", "pickWinner": null, "resultStatus": null}, {"id": "g155", "week": 11, "teamA": "Titans", "teamB": "Cowboys", "pickWinner": null, "resultStatus": null}, {"id": "g156", "week": 11, "teamA": "Buccaneers", "teamB": "Lions", "pickWinner": null, "resultStatus": null}, {"id": "g157", "week": 11, "teamA": "Cardinals", "teamB": "Chiefs", "pickWinner": null, "resultStatus": null}, {"id": "g158", "week": 11, "teamA": "Jaguars", "teamB": "Giants", "pickWinner": null, "resultStatus": null}, {"id": "g159", "week": 11, "teamA": "Jets", "teamB": "Chargers", "pickWinner": null, "resultStatus": null}, {"id": "g160", "week": 11, "teamA": "Raiders", "teamB": "Broncos", "pickWinner": null, "resultStatus": null}, {"id": "g161", "week": 11, "teamA": "Steelers", "teamB": "Eagles", "pickWinner": null, "resultStatus": null}, {"id": "g162", "week": 11, "teamA": "Vikings", "teamB": "49ers", "pickWinner": null, "resultStatus": null}, {"id": "g163", "week": 11, "teamA": "Bengals", "teamB": "Commanders", "pickWinner": null, "resultStatus": null}, {"id": "g164", "week": 12, "teamA": "Packers", "teamB": "Rams", "pickWinner": null, "resultStatus": null}, {"id": "g165", "week": 12, "teamA": "Bears", "teamB": "Lions", "pickWinner": null, "resultStatus": null}, {"id": "g166", "week": 12, "teamA": "Eagles", "teamB": "Cowboys", "pickWinner": null, "resultStatus": null}, {"id": "g167", "week": 12, "teamA": "Chiefs", "teamB": "Bills", "pickWinner": null, "resultStatus": null}, {"id": "g168", "week": 12, "teamA": "Broncos", "teamB": "Steelers", "pickWinner": null, "resultStatus": null}, {"id": "g169", "week": 12, "teamA": "Saints", "teamB": "Bengals", "pickWinner": null, "resultStatus": null}, {"id": "g170", "week": 12, "teamA": "Raiders", "teamB": "Browns", "pickWinner": null, "resultStatus": null}, {"id": "g171", "week": 12, "teamA": "Ravens", "teamB": "Texans", "pickWinner": null, "resultStatus": null}, {"id": "g172", "week": 12, "teamA": "Giants", "teamB": "Colts", "pickWinner": null, "resultStatus": null}, {"id": "g173", "week": 12, "teamA": "Jets", "teamB": "Dolphins", "pickWinner": null, "resultStatus": null}, {"id": "g174", "week": 12, "teamA": "Falcons", "teamB": "Vikings", "pickWinner": null, "resultStatus": null}, {"id": "g175", "week": 12, "teamA": "Titans", "teamB": "Jaguars", "pickWinner": null, "resultStatus": null}, {"id": "g176", "week": 12, "teamA": "Commanders", "teamB": "Cardinals", "pickWinner": null, "resultStatus": null}, {"id": "g177", "week": 12, "teamA": "Seahawks", "teamB": "49ers", "pickWinner": null, "resultStatus": null}, {"id": "g178", "week": 12, "teamA": "Patriots", "teamB": "Chargers", "pickWinner": null, "resultStatus": null}, {"id": "g179", "week": 12, "teamA": "Panthers", "teamB": "Buccaneers", "pickWinner": null, "resultStatus": null}, {"id": "g180", "week": 13, "teamA": "Chiefs", "teamB": "Rams", "pickWinner": null, "resultStatus": null}, {"id": "g181", "week": 13, "teamA": "Lions", "teamB": "Falcons", "pickWinner": null, "resultStatus": null}, {"id": "g182", "week": 13, "teamA": "Jaguars", "teamB": "Bears", "pickWinner": null, "resultStatus": null}, {"id": "g183", "week": 13, "teamA": "Bengals", "teamB": "Browns", "pickWinner": null, "resultStatus": null}, {"id": "g184", "week": 13, "teamA": "Packers", "teamB": "Saints", "pickWinner": null, "resultStatus": null}, {"id": "g185", "week": 13, "teamA": "49ers", "teamB": "Giants", "pickWinner": null, "resultStatus": null}, {"id": "g186", "week": 13, "teamA": "Chargers", "teamB": "Buccaneers", "pickWinner": null, "resultStatus": null}, {"id": "g187", "week": 13, "teamA": "Commanders", "teamB": "Titans", "pickWinner": null, "resultStatus": null}, {"id": "g188", "week": 13, "teamA": "Eagles", "teamB": "Cardinals", "pickWinner": null, "resultStatus": null}, {"id": "g189", "week": 13, "teamA": "Dolphins", "teamB": "Broncos", "pickWinner": null, "resultStatus": null}, {"id": "g190", "week": 13, "teamA": "Panthers", "teamB": "Vikings", "pickWinner": null, "resultStatus": null}, {"id": "g191", "week": 13, "teamA": "Bills", "teamB": "Patriots", "pickWinner": null, "resultStatus": null}, {"id": "g192", "week": 13, "teamA": "Texans", "teamB": "Steelers", "pickWinner": null, "resultStatus": null}, {"id": "g193", "week": 13, "teamA": "Cowboys", "teamB": "Seahawks", "pickWinner": null, "resultStatus": null}, {"id": "g194", "week": 14, "teamA": "Vikings", "teamB": "Patriots", "pickWinner": null, "resultStatus": null}, {"id": "g195", "week": 14, "teamA": "Buccaneers", "teamB": "Ravens", "pickWinner": null, "resultStatus": null}, {"id": "g196", "week": 14, "teamA": "Saints", "teamB": "Panthers", "pickWinner": null, "resultStatus": null}, {"id": "g197", "week": 14, "teamA": "Falcons", "teamB": "Browns", "pickWinner": null, "resultStatus": null}, {"id": "g198", "week": 14, "teamA": "Titans", "teamB": "Lions", "pickWinner": null, "resultStatus": null}, {"id": "g199", "week": 14, "teamA": "Bears", "teamB": "Dolphins", "pickWinner": null, "resultStatus": null}, {"id": "g200", "week": 14, "teamA": "Broncos", "teamB": "Jets", "pickWinner": null, "resultStatus": null}, {"id": "g201", "week": 14, "teamA": "Colts", "teamB": "Eagles", "pickWinner": null, "resultStatus": null}, {"id": "g202", "week": 14, "teamA": "Texans", "teamB": "Commanders", "pickWinner": null, "resultStatus": null}, {"id": "g203", "week": 14, "teamA": "Chargers", "teamB": "Raiders", "pickWinner": null, "resultStatus": null}, {"id": "g204", "week": 14, "teamA": "Chiefs", "teamB": "Bengals", "pickWinner": null, "resultStatus": null}, {"id": "g205", "week": 14, "teamA": "Giants", "teamB": "Seahawks", "pickWinner": null, "resultStatus": null}, {"id": "g206", "week": 14, "teamA": "Rams", "teamB": "49ers", "pickWinner": null, "resultStatus": null}, {"id": "g207", "week": 14, "teamA": "Bills", "teamB": "Packers", "pickWinner": null, "resultStatus": null}, {"id": "g208", "week": 14, "teamA": "Steelers", "teamB": "Jaguars", "pickWinner": null, "resultStatus": null}, {"id": "g209", "week": 15, "teamA": "49ers", "teamB": "Chargers", "pickWinner": null, "resultStatus": null}, {"id": "g210", "week": 15, "teamA": "Seahawks", "teamB": "Eagles", "pickWinner": null, "resultStatus": null}, {"id": "g211", "week": 15, "teamA": "Bears", "teamB": "Bills", "pickWinner": null, "resultStatus": null}, {"id": "g212", "week": 15, "teamA": "Bengals", "teamB": "Panthers", "pickWinner": null, "resultStatus": null}, {"id": "g213", "week": 15, "teamA": "Dolphins", "teamB": "Packers", "pickWinner": null, "resultStatus": null}, {"id": "g214", "week": 15, "teamA": "Jaguars", "teamB": "Texans", "pickWinner": null, "resultStatus": null}, {"id": "g215", "week": 15, "teamA": "Browns", "teamB": "Giants", "pickWinner": null, "resultStatus": null}, {"id": "g216", "week": 15, "teamA": "Ravens", "teamB": "Steelers", "pickWinner": null, "resultStatus": null}, {"id": "g217", "week": 15, "teamA": "Saints", "teamB": "Buccaneers", "pickWinner": null, "resultStatus": null}, {"id": "g218", "week": 15, "teamA": "Colts", "teamB": "Titans", "pickWinner": null, "resultStatus": null}, {"id": "g219", "week": 15, "teamA": "Falcons", "teamB": "Commanders", "pickWinner": null, "resultStatus": null}, {"id": "g220", "week": 15, "teamA": "Jets", "teamB": "Cardinals", "pickWinner": null, "resultStatus": null}, {"id": "g221", "week": 15, "teamA": "Cowboys", "teamB": "Rams", "pickWinner": null, "resultStatus": null}, {"id": "g222", "week": 15, "teamA": "Broncos", "teamB": "Raiders", "pickWinner": null, "resultStatus": null}, {"id": "g223", "week": 15, "teamA": "Lions", "teamB": "Vikings", "pickWinner": null, "resultStatus": null}, {"id": "g224", "week": 15, "teamA": "Patriots", "teamB": "Chiefs", "pickWinner": null, "resultStatus": null}, {"id": "g225", "week": 16, "teamA": "Texans", "teamB": "Eagles", "pickWinner": null, "resultStatus": null}, {"id": "g226", "week": 16, "teamA": "Packers", "teamB": "Bears", "pickWinner": null, "resultStatus": null}, {"id": "g227", "week": 16, "teamA": "Bills", "teamB": "Broncos", "pickWinner": null, "resultStatus": null}, {"id": "g228", "week": 16, "teamA": "Rams", "teamB": "Seahawks", "pickWinner": null, "resultStatus": null}, {"id": "g229", "week": 16, "teamA": "Browns", "teamB": "Ravens", "pickWinner": null, "resultStatus": null}, {"id": "g230", "week": 16, "teamA": "Chargers", "teamB": "Dolphins", "pickWinner": null, "resultStatus": null}, {"id": "g231", "week": 16, "teamA": "Cardinals", "teamB": "Saints", "pickWinner": null, "resultStatus": null}, {"id": "g232", "week": 16, "teamA": "Patriots", "teamB": "Jets", "pickWinner": null, "resultStatus": null}, {"id": "g233", "week": 16, "teamA": "Titans", "teamB": "Raiders", "pickWinner": null, "resultStatus": null}, {"id": "g234", "week": 16, "teamA": "49ers", "teamB": "Chiefs", "pickWinner": null, "resultStatus": null}, {"id": "g235", "week": 16, "teamA": "Jaguars", "teamB": "Cowboys", "pickWinner": null, "resultStatus": null}, {"id": "g236", "week": 16, "teamA": "Giants", "teamB": "Lions", "pickWinner": null, "resultStatus": null}, {"id": "g237", "week": 16, "teamA": "Buccaneers", "teamB": "Falcons", "pickWinner": null, "resultStatus": null}, {"id": "g238", "week": 16, "teamA": "Bengals", "teamB": "Colts", "pickWinner": null, "resultStatus": null}, {"id": "g239", "week": 16, "teamA": "Commanders", "teamB": "Vikings", "pickWinner": null, "resultStatus": null}, {"id": "g240", "week": 16, "teamA": "Panthers", "teamB": "Steelers", "pickWinner": null, "resultStatus": null}, {"id": "g241", "week": 17, "teamA": "Ravens", "teamB": "Bengals", "pickWinner": null, "resultStatus": null}, {"id": "g242", "week": 17, "teamA": "Saints", "teamB": "Falcons", "pickWinner": null, "resultStatus": null}, {"id": "g243", "week": 17, "teamA": "Seahawks", "teamB": "Panthers", "pickWinner": null, "resultStatus": null}, {"id": "g244", "week": 17, "teamA": "Colts", "teamB": "Browns", "pickWinner": null, "resultStatus": null}, {"id": "g245", "week": 17, "teamA": "Giants", "teamB": "Cowboys", "pickWinner": null, "resultStatus": null}, {"id": "g246", "week": 17, "teamA": "Bills", "teamB": "Dolphins", "pickWinner": null, "resultStatus": null}, {"id": "g247", "week": 17, "teamA": "Vikings", "teamB": "Jets", "pickWinner": null, "resultStatus": null}, {"id": "g248", "week": 17, "teamA": "Steelers", "teamB": "Titans", "pickWinner": null, "resultStatus": null}, {"id": "g249", "week": 17, "teamA": "Raiders", "teamB": "Cardinals", "pickWinner": null, "resultStatus": null}, {"id": "g250", "week": 17, "teamA": "Lions", "teamB": "Bears", "pickWinner": null, "resultStatus": null}, {"id": "g251", "week": 17, "teamA": "Eagles", "teamB": "49ers", "pickWinner": null, "resultStatus": null}, {"id": "g252", "week": 17, "teamA": "Texans", "teamB": "Packers", "pickWinner": null, "resultStatus": null}, {"id": "g253", "week": 17, "teamA": "Commanders", "teamB": "Jaguars", "pickWinner": null, "resultStatus": null}, {"id": "g254", "week": 17, "teamA": "Chiefs", "teamB": "Chargers", "pickWinner": null, "resultStatus": null}, {"id": "g255", "week": 17, "teamA": "Broncos", "teamB": "Patriots", "pickWinner": null, "resultStatus": null}, {"id": "g256", "week": 17, "teamA": "Rams", "teamB": "Buccaneers", "pickWinner": null, "resultStatus": null}, {"id": "g257", "week": 18, "teamA": "49ers", "teamB": "Cardinals", "pickWinner": null, "resultStatus": null}, {"id": "g258", "week": 18, "teamA": "Steelers", "teamB": "Ravens", "pickWinner": null, "resultStatus": null}, {"id": "g259", "week": 18, "teamA": "Jets", "teamB": "Bills", "pickWinner": null, "resultStatus": null}, {"id": "g260", "week": 18, "teamA": "Falcons", "teamB": "Panthers", "pickWinner": null, "resultStatus": null}, {"id": "g261", "week": 18, "teamA": "Browns", "teamB": "Bengals", "pickWinner": null, "resultStatus": null}, {"id": "g262", "week": 18, "teamA": "Chargers", "teamB": "Broncos", "pickWinner": null, "resultStatus": null}, {"id": "g263", "week": 18, "teamA": "Lions", "teamB": "Packers", "pickWinner": null, "resultStatus": null}, {"id": "g264", "week": 18, "teamA": "Titans", "teamB": "Texans", "pickWinner": null, "resultStatus": null}, {"id": "g265", "week": 18, "teamA": "Jaguars", "teamB": "Colts", "pickWinner": null, "resultStatus": null}, {"id": "g266", "week": 18, "teamA": "Raiders", "teamB": "Chiefs", "pickWinner": null, "resultStatus": null}, {"id": "g267", "week": 18, "teamA": "Seahawks", "teamB": "Rams", "pickWinner": null, "resultStatus": null}, {"id": "g268", "week": 18, "teamA": "Bears", "teamB": "Vikings", "pickWinner": null, "resultStatus": null}, {"id": "g269", "week": 18, "teamA": "Dolphins", "teamB": "Patriots", "pickWinner": null, "resultStatus": null}, {"id": "g270", "week": 18, "teamA": "Buccaneers", "teamB": "Saints", "pickWinner": null, "resultStatus": null}, {"id": "g271", "week": 18, "teamA": "Eagles", "teamB": "Giants", "pickWinner": null, "resultStatus": null}, {"id": "g272", "week": 18, "teamA": "Cowboys", "teamB": "Commanders", "pickWinner": null, "resultStatus": null}]};
+let state = load();
+
+const PLAYOFF_GAMES = [
+  {id:"gp1", week:19, teamA:"", teamB:"", pickWinner:null, resultStatus:null},
+  {id:"gp2", week:19, teamA:"", teamB:"", pickWinner:null, resultStatus:null},
+  {id:"gp3", week:19, teamA:"", teamB:"", pickWinner:null, resultStatus:null},
+  {id:"gp4", week:19, teamA:"", teamB:"", pickWinner:null, resultStatus:null},
+  {id:"gp5", week:19, teamA:"", teamB:"", pickWinner:null, resultStatus:null},
+  {id:"gp6", week:19, teamA:"", teamB:"", pickWinner:null, resultStatus:null},
+  {id:"gp7", week:20, teamA:"", teamB:"", pickWinner:null, resultStatus:null},
+  {id:"gp8", week:20, teamA:"", teamB:"", pickWinner:null, resultStatus:null},
+  {id:"gp9", week:20, teamA:"", teamB:"", pickWinner:null, resultStatus:null},
+  {id:"gp10", week:20, teamA:"", teamB:"", pickWinner:null, resultStatus:null},
+  {id:"gp11", week:21, teamA:"", teamB:"", pickWinner:null, resultStatus:null},
+  {id:"gp12", week:21, teamA:"", teamB:"", pickWinner:null, resultStatus:null},
+  {id:"gp13", week:22, teamA:"", teamB:"", pickWinner:null, resultStatus:null}
+];
+
+function ensurePlayoffs(){
+  const hasPlayoffs = state.games.some(g=>g.week >= 19);
+  if(!hasPlayoffs){
+    state.games = state.games.concat(PLAYOFF_GAMES);
+    save();
+  }
+}
+ensurePlayoffs();
+
+const WEEK_LABELS = {19:"Wild Card", 20:"Divisional", 21:"Conf. Champ.", 22:"Super Bowl"};
+function weekLabel(w){
+  return WEEK_LABELS[w] || ("Sem " + w);
+}
+
+function load(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(raw) return JSON.parse(raw);
+  }catch(e){}
+  return JSON.parse(JSON.stringify(SEED_DATA));
+}
+function save(){
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){}
+}
+
+function weeksInUse(){
+  const set = new Set(state.games.map(g=>g.week));
+  set.add(state.currentWeek);
+  return Array.from(set).sort((a,b)=>a-b);
+}
+
+function renderWeekbar(){
+  const bar = document.getElementById("weekbar");
+  bar.innerHTML = "";
+  weeksInUse().forEach(w=>{
+    const b = document.createElement("button");
+    b.textContent = weekLabel(w);
+    if(w === state.currentWeek) b.classList.add("active");
+    b.onclick = ()=>{ state.currentWeek = w; save(); renderAll(); };
+    bar.appendChild(b);
+  });
+}
+
+function currentGames(){
+  return state.games.filter(g=>g.week === state.currentWeek);
+}
+
+function statLine(games){
+  const correct = games.filter(g=>g.resultStatus==="correct").length;
+  const wrong = games.filter(g=>g.resultStatus==="wrong").length;
+  const decided = correct + wrong;
+  const pct = decided ? Math.round((correct/decided)*100) : 0;
+  return {correct, wrong, pct};
+}
+
+function renderStats(){
+  document.getElementById("weekStatsTitle").textContent = "Estatísticas — " + weekLabel(state.currentWeek);
+  const weekBox = document.getElementById("statsWeek");
+  const w = statLine(currentGames());
+  weekBox.innerHTML = `
+    <div class="sb-stat good"><b>${w.correct}</b><span>Acertos</span></div>
+    <div class="sb-stat bad"><b>${w.wrong}</b><span>Erros</span></div>
+    <div class="sb-stat pct"><b>${w.pct}%</b><span>Aproveitamento</span></div>
+  `;
+
+  const seasonBox = document.getElementById("statsSeason");
+  const s = statLine(state.games);
+  seasonBox.innerHTML = `
+    <div class="sb-stat good"><b>${s.correct}</b><span>Acertos</span></div>
+    <div class="sb-stat bad"><b>${s.wrong}</b><span>Erros</span></div>
+    <div class="sb-stat pct"><b>${s.pct}%</b><span>Aproveitamento</span></div>
+  `;
+}
+
+function badgeInfo(status){
+  if(status === "correct") return {cls:"correct", label:"Acerto"};
+  if(status === "wrong") return {cls:"wrong", label:"Erro"};
+  return {cls:"pending", label:"— Pendente"};
+}
+
+function renderGames(){
+  const body = document.getElementById("gamesBody");
+  const games = currentGames();
+  body.innerHTML = "";
+  if(games.length === 0){
+    body.innerHTML = `<tr><td colspan="5"><div class="empty">Nenhum jogo cadastrado nesta semana ainda.</div></td></tr>`;
+    return;
+  }
+  games.forEach(g=>{
+    const tr = document.createElement("tr");
+
+    const tdA = document.createElement("td");
+    tdA.className = "team";
+    tdA.innerHTML = `<input value="${escapeAttr(g.teamA)}" placeholder="Time A">`;
+    tdA.querySelector("input").oninput = (e)=>{
+      g.teamA = e.target.value; save();
+      chipBtnA.textContent = g.teamA || "Time A";
+    };
+    tr.appendChild(tdA);
+
+    const tdB = document.createElement("td");
+    tdB.className = "team";
+    tdB.innerHTML = `<input value="${escapeAttr(g.teamB)}" placeholder="Time B">`;
+    tdB.querySelector("input").oninput = (e)=>{
+      g.teamB = e.target.value; save();
+      chipBtnB.textContent = g.teamB || "Time B";
+    };
+    tr.appendChild(tdB);
+
+    const tdPick = document.createElement("td");
+    const chips = document.createElement("div");
+    chips.className = "pick-chips";
+    const chipBtnA = document.createElement("button");
+    chipBtnA.textContent = g.teamA || "Time A";
+    if(g.pickWinner === "teamA") chipBtnA.classList.add("picked");
+    chipBtnA.onclick = ()=>{ g.pickWinner = "teamA"; save(); renderGames(); };
+    chips.appendChild(chipBtnA);
+    const chipBtnB = document.createElement("button");
+    chipBtnB.textContent = g.teamB || "Time B";
+    if(g.pickWinner === "teamB") chipBtnB.classList.add("picked");
+    chipBtnB.onclick = ()=>{ g.pickWinner = "teamB"; save(); renderGames(); };
+    chips.appendChild(chipBtnB);
+    tdPick.appendChild(chips);
+    tr.appendChild(tdPick);
+
+    const tdResult = document.createElement("td");
+    const info = badgeInfo(g.resultStatus);
+    const rbtn = document.createElement("button");
+    rbtn.className = "result-badge " + info.cls;
+    rbtn.textContent = info.label;
+    rbtn.title = "Toque para alternar: Pendente → Acerto → Erro";
+    rbtn.onclick = ()=>{
+      g.resultStatus = g.resultStatus === null ? "correct" : g.resultStatus === "correct" ? "wrong" : null;
+      save(); renderAll();
+    };
+    tdResult.appendChild(rbtn);
+    tr.appendChild(tdResult);
+
+    const tdRemove = document.createElement("td");
+    const rm = document.createElement("button");
+    rm.className = "remove";
+    rm.textContent = "✕";
+    rm.onclick = ()=>{ state.games = state.games.filter(x=>x.id!==g.id); save(); renderAll(); };
+    tdRemove.appendChild(rm);
+    tr.appendChild(tdRemove);
+
+    body.appendChild(tr);
+  });
+}
+
+function escapeAttr(s){
+  return (s||"").replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+
+function addGame(){
+  const maxId = state.games.reduce((m,g)=>{
+    const n = parseInt((g.id||"g0").slice(1),10);
+    return isNaN(n) ? m : Math.max(m,n);
+  }, 0);
+  state.games.push({
+    id: "g" + (maxId+1),
+    week: state.currentWeek,
+    teamA: "", teamB: "",
+    pickWinner: null,
+    resultStatus: null
+  });
+  save(); renderAll();
+}
+function renderAll(){
+  renderWeekbar();
+  renderStats();
+  renderGames();
+}
+renderAll();
+</script>
+</body>
+</html>
