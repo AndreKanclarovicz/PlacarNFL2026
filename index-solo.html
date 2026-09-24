@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, viewport-fit=cover">
 <title>NFL Temporada 2026/27</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -16,10 +16,10 @@
   padding-top:env(safe-area-inset-top,0px);
   padding-bottom:env(safe-area-inset-bottom,0px);
 }
-html{scroll-padding-top:env(safe-area-inset-top,0px); height:100%;}
+html{scroll-padding-top:env(safe-area-inset-top,0px); height:100%; overflow-x:hidden;}
 *{box-sizing:border-box;}
 body{
-  margin:0; height:100%; background:var(--bg); color:var(--chalk);
+  margin:0; height:100%; background:var(--bg); color:var(--chalk); overflow-x:hidden;
   font-family:'Inter',-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
   display:flex; flex-direction:column;
 }
@@ -44,7 +44,7 @@ h1 .ball{flex:0 0 auto; display:block;}
 .name-input::placeholder{color:var(--muted);}
 .name-input:focus{outline:none; border-bottom-color:var(--amber);}
 .hash{
-  height:6px; margin:0 -100vw 10px; background-image:repeating-linear-gradient(
+  height:6px; margin:0 calc(-16px - env(safe-area-inset-left,0px)) 10px; background-image:repeating-linear-gradient(
     90deg, transparent, transparent 22px, rgba(227,162,59,.35) 22px, rgba(227,162,59,.35) 24px
   );
   opacity:.6;
