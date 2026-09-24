@@ -127,7 +127,7 @@ td.team input:focus{outline:none; border-bottom:1px solid var(--amber);}
 .result-badge.pending{color:var(--pending); font-weight:400;}
 .remove{background:none; border:none; color:var(--muted); font-size:1rem; cursor:pointer; padding:2px 6px;}
 .empty{color:var(--muted); text-align:center; padding:32px 10px; font-size:.85rem;}
-.share-row{display:flex; justify-content:center; margin-bottom:16px;}
+.share-row{display:flex; justify-content:center; margin-top:20px;}
 .share-btn{
   background:var(--amber); color:var(--amber-ink); border:none; border-radius:6px;
   padding:10px 18px; font-size:.82rem; font-weight:600; cursor:pointer;
@@ -140,6 +140,9 @@ td.team input:focus{outline:none; border-bottom:1px solid var(--amber);}
   color:var(--chalk); text-align:center; margin-bottom:12px; letter-spacing:.02em;
 }
 #captureArea.capturing .capture-heading{display:block;}
+#captureArea.capturing .table-wrap{overflow-x:visible;}
+#captureArea.capturing table{width:auto;}
+#captureArea.capturing .table-wrap{overflow:visible;}
 </style>
 </head>
 <body>
@@ -150,9 +153,6 @@ td.team input:focus{outline:none; border-bottom:1px solid var(--amber);}
   <div class="weekbar" id="weekbar"></div>
 </header>
 <main>
-  <div class="share-row">
-    <button id="shareBtn" class="share-btn">📤 Baixar imagem dos palpites</button>
-  </div>
   <div id="captureArea">
     <div class="capture-heading" id="captureHeading"></div>
     <div class="section-title" id="weekStatsTitle">Estatísticas da semana</div>
@@ -173,6 +173,9 @@ td.team input:focus{outline:none; border-bottom:1px solid var(--amber);}
   </div>
   <div class="section-title season">Estatísticas da temporada inteira</div>
   <div class="scoreboard" id="statsSeason"></div>
+  <div class="share-row">
+    <button id="shareBtn" class="share-btn">📤 Baixar imagem dos palpites</button>
+  </div>
 </main>
 
 
@@ -450,7 +453,7 @@ document.getElementById("shareBtn").onclick = function(){
   btn.disabled = true;
   btn.textContent = "Gerando imagem...";
   const bg = getComputedStyle(document.body).backgroundColor;
-  html2canvas(area, {backgroundColor: bg, scale: 2}).then(function(canvas){
+  html2canvas(area, {backgroundColor: bg, scale: 2, windowWidth: 760, width: area.scrollWidth}).then(function(canvas){
     area.classList.remove("capturing");
     btn.disabled = false;
     btn.textContent = "📤 Baixar imagem dos palpites";
