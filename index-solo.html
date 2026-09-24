@@ -135,6 +135,7 @@ td.team input:focus{outline:none; border-bottom:1px solid var(--amber);}
 #captureArea.capturing .capture-heading{display:block;}
 #captureArea.capturing .table-wrap{overflow-x:visible;}
 #captureArea.capturing table{width:auto;}
+#captureArea.capturing thead th{position:static;}
 </style>
 </head>
 <body>
@@ -396,13 +397,23 @@ document.getElementById("shareBtn").onclick = function(){
   heading.textContent = "NFL Temporada 2026/27 — " + who + " — " + weekLabel(state.currentWeek);
   const area = document.getElementById("captureArea");
   area.classList.add("capturing");
+  const prevHtmlOverflow = document.documentElement.style.overflowX;
+  const prevBodyOverflow = document.body.style.overflowX;
+  document.documentElement.style.overflowX = "visible";
+  document.body.style.overflowX = "visible";
   btn.disabled = true;
   btn.textContent = "Gerando imagem...";
   const bg = getComputedStyle(document.body).backgroundColor;
-  html2canvas(area, {backgroundColor: bg, scale: 2, windowWidth: 760, width: area.scrollWidth}).then(function(canvas){
+  const fullWidth = area.scrollWidth;
+  function cleanup(){
     area.classList.remove("capturing");
+    document.documentElement.style.overflowX = prevHtmlOverflow;
+    document.body.style.overflowX = prevBodyOverflow;
     btn.disabled = false;
     btn.textContent = "📤 Baixar imagem dos palpites";
+  }
+  html2canvas(area, {backgroundColor: bg, scale: 2, width: fullWidth, windowWidth: fullWidth}).then(function(canvas){
+    cleanup();
     canvas.toBlob(function(blob){
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -414,9 +425,7 @@ document.getElementById("shareBtn").onclick = function(){
       URL.revokeObjectURL(url);
     });
   }).catch(function(){
-    area.classList.remove("capturing");
-    btn.disabled = false;
-    btn.textContent = "📤 Baixar imagem dos palpites";
+    cleanup();
     alert("Não foi possível gerar a imagem. Tente novamente.");
   });
 };
