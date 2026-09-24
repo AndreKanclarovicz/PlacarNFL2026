@@ -2,11 +2,12 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Placar NFL 2026</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
 :root{
   --bg:#0C1C15; --panel:#132A20; --panel-alt:#1B392A; --line:rgba(243,241,231,.12);
@@ -126,6 +127,19 @@ td.team input:focus{outline:none; border-bottom:1px solid var(--amber);}
 .result-badge.pending{color:var(--pending); font-weight:400;}
 .remove{background:none; border:none; color:var(--muted); font-size:1rem; cursor:pointer; padding:2px 6px;}
 .empty{color:var(--muted); text-align:center; padding:32px 10px; font-size:.85rem;}
+.share-row{display:flex; justify-content:center; margin-bottom:16px;}
+.share-btn{
+  background:var(--amber); color:var(--amber-ink); border:none; border-radius:6px;
+  padding:10px 18px; font-size:.82rem; font-weight:600; cursor:pointer;
+  font-family:'Inter',sans-serif;
+}
+.share-btn:disabled{opacity:.6; cursor:default;}
+#captureArea{background:var(--bg); padding:2px;}
+.capture-heading{
+  display:none; font-family:'Oswald',sans-serif; font-size:1rem; font-weight:600;
+  color:var(--chalk); text-align:center; margin-bottom:12px; letter-spacing:.02em;
+}
+#captureArea.capturing .capture-heading{display:block;}
 </style>
 </head>
 <body>
@@ -136,20 +150,26 @@ td.team input:focus{outline:none; border-bottom:1px solid var(--amber);}
   <div class="weekbar" id="weekbar"></div>
 </header>
 <main>
-  <div class="section-title" id="weekStatsTitle">Estatísticas da semana</div>
-  <div class="scoreboard" id="statsWeek"></div>
-  <div class="table-wrap">
-    <table>
-      <thead>
-        <tr>
-          <th>Visitante</th>
-          <th>Mandante</th>
-          <th>Meu palpite</th>
-          <th>Resultado</th>
-        </tr>
-      </thead>
-      <tbody id="gamesBody"></tbody>
-    </table>
+  <div class="share-row">
+    <button id="shareBtn" class="share-btn">📤 Baixar imagem dos palpites</button>
+  </div>
+  <div id="captureArea">
+    <div class="capture-heading" id="captureHeading"></div>
+    <div class="section-title" id="weekStatsTitle">Estatísticas da semana</div>
+    <div class="scoreboard" id="statsWeek"></div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Visitante</th>
+            <th>Mandante</th>
+            <th>Meu palpite</th>
+            <th>Resultado</th>
+          </tr>
+        </thead>
+        <tbody id="gamesBody"></tbody>
+      </table>
+    </div>
   </div>
   <div class="section-title season">Estatísticas da temporada inteira</div>
   <div class="scoreboard" id="statsSeason"></div>
@@ -419,6 +439,38 @@ function renderAll(){
   renderGames();
 }
 renderAll();
+
+document.getElementById("shareBtn").onclick = function(){
+  const btn = this;
+  const boardLabel = (BOARD_DEFS.find(b=>b.id===state.currentBoard) || {}).label || "";
+  const heading = document.getElementById("captureHeading");
+  heading.textContent = "NFL Temporada 2026/27 — " + boardLabel + " — " + weekLabel(state.currentWeek);
+  const area = document.getElementById("captureArea");
+  area.classList.add("capturing");
+  btn.disabled = true;
+  btn.textContent = "Gerando imagem...";
+  const bg = getComputedStyle(document.body).backgroundColor;
+  html2canvas(area, {backgroundColor: bg, scale: 2}).then(function(canvas){
+    area.classList.remove("capturing");
+    btn.disabled = false;
+    btn.textContent = "📤 Baixar imagem dos palpites";
+    canvas.toBlob(function(blob){
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "palpites-" + state.currentBoard + "-semana" + state.currentWeek + ".png";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    });
+  }).catch(function(){
+    area.classList.remove("capturing");
+    btn.disabled = false;
+    btn.textContent = "📤 Baixar imagem dos palpites";
+    alert("Não foi possível gerar a imagem. Tente novamente.");
+  });
+};
 </script>
 </body>
 </html>
