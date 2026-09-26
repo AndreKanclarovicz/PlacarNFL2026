@@ -143,7 +143,7 @@ td.result-cell{text-align:center;}
   color:var(--chalk); text-align:center; margin-bottom:12px; letter-spacing:.02em;
 }
 #captureArea.capturing .capture-heading{display:block;}
-#captureArea.capturing .table-wrap{overflow:visible; display:inline-block; width:auto;}
+#captureArea.capturing .table-wrap{overflow:visible; width:max-content;}
 #captureArea.capturing table{width:auto; table-layout:auto;}
 #captureArea.capturing thead th{position:static;}
 </style>
@@ -486,7 +486,7 @@ document.getElementById("shareBtn").onclick = function(){
       const style = clonedDoc.createElement("style");
       style.textContent = [
         "#captureArea .capture-heading{display:block !important;}",
-        "#captureArea .table-wrap{overflow:visible !important; display:inline-block !important; width:auto !important;}",
+        "#captureArea .table-wrap{overflow:visible !important; width:max-content !important;}",
         "#captureArea .table-wrap::-webkit-scrollbar{display:none !important; width:0 !important; height:0 !important;}",
         "#captureArea table{width:auto !important; table-layout:auto !important;}",
         "#captureArea thead th{position:static !important;}",
