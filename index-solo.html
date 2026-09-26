@@ -415,7 +415,22 @@ document.getElementById("shareBtn").onclick = function(){
     btn.disabled = false;
     btn.textContent = "📤 Baixar imagem dos palpites";
   }
-  html2canvas(area, {backgroundColor: bg, scale: 2, width: fullWidth, windowWidth: fullWidth}).then(function(canvas){
+  html2canvas(area, {
+    backgroundColor: bg, scale: 2, width: fullWidth, windowWidth: fullWidth,
+    onclone: function(clonedDoc){
+      const style = clonedDoc.createElement("style");
+      style.textContent = [
+        "#captureArea .capture-heading{display:block !important;}",
+        "#captureArea .table-wrap{overflow:visible !important;}",
+        "#captureArea .table-wrap::-webkit-scrollbar{display:none !important; width:0 !important; height:0 !important;}",
+        "#captureArea table{width:auto !important; border-collapse:separate !important; border-spacing:0 !important;}",
+        "#captureArea thead th{position:static !important;}",
+        "#captureArea tbody td{border-right:none !important; box-shadow:none !important;}",
+        "#captureArea .sb-stat + .sb-stat::before{display:none !important;}"
+      ].join("\n");
+      clonedDoc.head.appendChild(style);
+    }
+  }).then(function(canvas){
     cleanup();
     canvas.toBlob(function(blob){
       const url = URL.createObjectURL(blob);
