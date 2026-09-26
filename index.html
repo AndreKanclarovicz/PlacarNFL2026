@@ -88,7 +88,7 @@ main{flex:1; overflow-y:auto; padding:16px calc(14px + env(safe-area-inset-left,
 .table-wrap{
   overflow-x:auto; border:1px solid var(--line); border-radius:6px; background:var(--panel);
 }
-table{border-collapse:collapse; width:100%; min-width:480px;}
+table{border-collapse:collapse; width:100%; min-width:480px; table-layout:fixed;}
 thead th{
   background:var(--panel-alt); color:var(--muted); font-size:.7rem; font-weight:500;
   text-align:left; padding:10px 12px; position:sticky; top:0; white-space:nowrap;
@@ -143,12 +143,8 @@ td.result-cell{text-align:center;}
   color:var(--chalk); text-align:center; margin-bottom:12px; letter-spacing:.02em;
 }
 #captureArea.capturing .capture-heading{display:block;}
-#captureArea.capturing .table-wrap{overflow-x:visible;}
-#captureArea.capturing table{width:auto;}
-#captureArea.capturing thead th{position:static;}
-#captureArea.capturing table{border-collapse:separate; border-spacing:0;}
-#captureArea.capturing tbody td{border-right:none;}
 #captureArea.capturing .table-wrap{overflow:visible;}
+#captureArea.capturing thead th{position:static;}
 </style>
 </head>
 <body>
@@ -165,6 +161,12 @@ td.result-cell{text-align:center;}
     <div class="scoreboard" id="statsWeek"></div>
     <div class="table-wrap">
       <table>
+        <colgroup>
+          <col style="width:27%">
+          <col style="width:27%">
+          <col style="width:32%">
+          <col style="width:14%">
+        </colgroup>
         <thead>
           <tr>
             <th>Visitante</th>
@@ -485,9 +487,7 @@ document.getElementById("shareBtn").onclick = function(){
         "#captureArea .capture-heading{display:block !important;}",
         "#captureArea .table-wrap{overflow:visible !important;}",
         "#captureArea .table-wrap::-webkit-scrollbar{display:none !important; width:0 !important; height:0 !important;}",
-        "#captureArea table{width:auto !important; border-collapse:separate !important; border-spacing:0 !important;}",
         "#captureArea thead th{position:static !important;}",
-        "#captureArea tbody td{border-right:none !important; box-shadow:none !important;}",
         "#captureArea button{-webkit-appearance:none !important; appearance:none !important; outline:none !important;}",
         "#captureArea button::-moz-focus-inner{border:0 !important; padding:0 !important;}",
       ].join("\n");
