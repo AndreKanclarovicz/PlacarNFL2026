@@ -25,6 +25,8 @@ body.theme-hihihi{
 }
 html{scroll-padding-top:env(safe-area-inset-top,0px); height:100%; overflow-x:hidden;}
 *{box-sizing:border-box;}
+button{-webkit-appearance:none; appearance:none; outline:none;}
+button::-moz-focus-inner{border:0; padding:0;}
 body{
   margin:0; height:100%; background:var(--bg); color:var(--chalk); overflow-x:hidden;
   font-family:'Inter',-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
@@ -477,6 +479,8 @@ document.getElementById("shareBtn").onclick = function(){
         "#captureArea table{width:auto !important; border-collapse:separate !important; border-spacing:0 !important;}",
         "#captureArea thead th{position:static !important;}",
         "#captureArea tbody td{border-right:none !important; box-shadow:none !important;}",
+        "#captureArea button{-webkit-appearance:none !important; appearance:none !important; outline:none !important;}",
+        "#captureArea button::-moz-focus-inner{border:0 !important; padding:0 !important;}",
       ].join("\n");
       clonedDoc.head.appendChild(style);
     }
