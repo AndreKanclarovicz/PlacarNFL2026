@@ -399,6 +399,8 @@ document.getElementById("shareBtn").onclick = function(){
   heading.textContent = "NFL Temporada 2026/27 — " + who + " — " + weekLabel(state.currentWeek);
   const area = document.getElementById("captureArea");
   area.classList.add("capturing");
+  const tw = area.querySelector(".table-wrap");
+  if(tw) tw.scrollLeft = 0;
   const prevHtmlOverflow = document.documentElement.style.overflowX;
   const prevBodyOverflow = document.body.style.overflowX;
   document.documentElement.style.overflowX = "visible";
@@ -416,6 +418,7 @@ document.getElementById("shareBtn").onclick = function(){
   }
   html2canvas(area, {
     backgroundColor: bg, scale: 2, width: fullWidth, windowWidth: fullWidth,
+    x: 0, y: 0, scrollX: 0, scrollY: 0,
     onclone: function(clonedDoc){
       const style = clonedDoc.createElement("style");
       style.textContent = [
