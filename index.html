@@ -143,7 +143,7 @@ td.result-cell{text-align:center;}
   color:var(--chalk); text-align:center; margin-bottom:12px; letter-spacing:.02em;
 }
 #captureArea.capturing .capture-heading{display:block;}
-#captureArea.capturing .table-wrap{overflow:visible; width:max-content;}
+#captureArea.capturing .table-wrap{overflow:visible;}
 #captureArea.capturing table{width:auto; table-layout:auto;}
 #captureArea.capturing thead th{position:static;}
 </style>
@@ -463,6 +463,7 @@ document.getElementById("shareBtn").onclick = function(){
   const area = document.getElementById("captureArea");
   area.classList.add("capturing");
   const tw = area.querySelector(".table-wrap");
+  const tbl = tw ? tw.querySelector("table") : null;
   if(tw) tw.scrollLeft = 0;
   const prevHtmlOverflow = document.documentElement.style.overflowX;
   const prevBodyOverflow = document.body.style.overflowX;
@@ -471,7 +472,11 @@ document.getElementById("shareBtn").onclick = function(){
   btn.disabled = true;
   btn.textContent = "Gerando imagem...";
   const bg = getComputedStyle(document.body).backgroundColor;
-  const fullWidth = area.scrollWidth;
+  // area.scrollWidth não conta conteúdo que só transbordou via overflow:visible,
+  // então medimos a própria tabela (que já está width:auto/table-layout:auto
+  // no modo de captura) para pegar a largura real de conteúdo.
+  const tableNaturalWidth = tbl ? tbl.scrollWidth : 0;
+  const fullWidth = Math.max(area.scrollWidth, tableNaturalWidth + 4, 480);
   function cleanup(){
     area.classList.remove("capturing");
     document.documentElement.style.overflowX = prevHtmlOverflow;
@@ -486,7 +491,7 @@ document.getElementById("shareBtn").onclick = function(){
       const style = clonedDoc.createElement("style");
       style.textContent = [
         "#captureArea .capture-heading{display:block !important;}",
-        "#captureArea .table-wrap{overflow:visible !important; width:max-content !important;}",
+        "#captureArea .table-wrap{overflow:visible !important;}",
         "#captureArea .table-wrap::-webkit-scrollbar{display:none !important; width:0 !important; height:0 !important;}",
         "#captureArea table{width:auto !important; table-layout:auto !important;}",
         "#captureArea thead th{position:static !important;}",
