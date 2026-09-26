@@ -82,12 +82,13 @@ main{flex:1; overflow-y:auto; padding:16px calc(14px + env(safe-area-inset-left,
 .table-wrap{
   overflow-x:auto; border:1px solid var(--line); border-radius:6px; background:var(--panel);
 }
-table{border-collapse:collapse; width:100%; min-width:540px;}
+table{border-collapse:collapse; width:100%; min-width:480px;}
 thead th{
   background:var(--panel-alt); color:var(--muted); font-size:.7rem; font-weight:500;
   text-align:left; padding:10px 12px; position:sticky; top:0; white-space:nowrap;
   border-bottom:1px solid var(--line); letter-spacing:.02em;
 }
+thead th:last-child{text-align:center;}
 tbody td{
   padding:9px 12px; font-size:.86rem; border-bottom:1px solid var(--line); vertical-align:middle;
 }
@@ -112,13 +113,15 @@ td.team input:focus{outline:none; border-bottom:1px solid var(--amber);}
   font-family:'Inter',sans-serif;
 }
 .pick-chips button.picked{background:var(--amber); border-color:var(--amber); color:var(--amber-ink); font-weight:600;}
-.result-badge{
-  border:none; background:transparent; cursor:pointer; font-size:.78rem; font-weight:500;
-  padding:5px 10px; border-radius:3px; white-space:nowrap; font-family:'Inter',sans-serif;
+td.result-cell{text-align:center;}
+.result-check{
+  width:34px; height:34px; border-radius:9px; border:none; cursor:pointer; padding:0;
+  display:inline-flex; align-items:center; justify-content:center; position:relative;
 }
-.result-badge.correct{color:var(--good); background:rgba(79,179,122,.12);}
-.result-badge.wrong{color:var(--bad); background:rgba(222,100,90,.12);}
-.result-badge.pending{color:var(--pending); font-weight:400;}
+.result-check svg{width:18px; height:18px; display:block;}
+.result-check.pending{background:transparent; box-shadow:inset 0 0 0 2px var(--line);}
+.result-check.correct{background:rgba(79,179,122,.12); color:var(--good);}
+.result-check.wrong{background:rgba(222,100,90,.12); color:var(--bad);}
 .empty{color:var(--muted); text-align:center; padding:32px 10px; font-size:.85rem;}
 .share-row{display:flex; justify-content:center; margin-top:20px;}
 .share-btn{
@@ -296,10 +299,12 @@ function renderStats(){
   `;
 }
 
-function badgeInfo(status){
-  if(status === "correct") return {cls:"correct", label:"Acerto"};
-  if(status === "wrong") return {cls:"wrong", label:"Erro"};
-  return {cls:"pending", label:"— Pendente"};
+const CHECK_SVG = '<svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const CROSS_SVG = '<svg viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/></svg>';
+function resultIcon(status){
+  if(status === "correct") return {cls:"correct", svg:CHECK_SVG};
+  if(status === "wrong") return {cls:"wrong", svg:CROSS_SVG};
+  return {cls:"pending", svg:""};
 }
 
 function renderGames(){
@@ -355,10 +360,11 @@ function renderGames(){
     tr.appendChild(tdPick);
 
     const tdResult = document.createElement("td");
-    const info = badgeInfo(pick.resultStatus);
+    tdResult.className = "result-cell";
+    const info = resultIcon(pick.resultStatus);
     const rbtn = document.createElement("button");
-    rbtn.className = "result-badge " + info.cls;
-    rbtn.textContent = info.label;
+    rbtn.className = "result-check " + info.cls;
+    rbtn.innerHTML = info.svg;
     rbtn.title = "Toque para alternar: Pendente → Acerto → Erro";
     rbtn.onclick = ()=>{
       const next = pick.resultStatus === null ? "correct" : pick.resultStatus === "correct" ? "wrong" : null;
