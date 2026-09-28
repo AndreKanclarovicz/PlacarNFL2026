@@ -418,6 +418,7 @@ renderAll();
 
 document.getElementById("shareBtn").onclick = function(){
   const btn = this;
+  const boardLabel = (BOARD_DEFS.find(b=>b.id===state.currentBoard) || {}).label || "";
   const heading = document.getElementById("captureHeading");
   heading.textContent = "NFL Temporada 2026/27 — " + boardLabel + " — " + weekLabel(state.currentWeek);
   const area = document.getElementById("captureArea");

@@ -366,6 +366,7 @@ renderAll();
 
 document.getElementById("shareBtn").onclick = function(){
   const btn = this;
+  const who = state.name && state.name.trim() ? state.name.trim() : "Meus palpites";
   const heading = document.getElementById("captureHeading");
   heading.textContent = "NFL Temporada 2026/27 — " + who + " — " + weekLabel(state.currentWeek);
   const area = document.getElementById("captureArea");
