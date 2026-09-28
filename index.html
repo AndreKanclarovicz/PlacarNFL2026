@@ -25,8 +25,6 @@ body.theme-hihihi{
 }
 html{scroll-padding-top:env(safe-area-inset-top,0px); height:100%; overflow-x:hidden;}
 *{box-sizing:border-box;}
-button{-webkit-appearance:none; appearance:none; outline:none;}
-button::-moz-focus-inner{border:0; padding:0;}
 body{
   margin:0; height:100%; background:var(--bg); color:var(--chalk); overflow-x:hidden;
   font-family:'Inter',-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
@@ -85,50 +83,46 @@ main{flex:1; overflow-y:auto; padding:16px calc(14px + env(safe-area-inset-left,
 .sb-stat.good b{color:var(--good);}
 .sb-stat.bad b{color:var(--bad);}
 .sb-stat.pct b{color:var(--amber);}
-.table-wrap{
-  overflow-x:auto; border:1px solid var(--line); border-radius:6px; background:var(--panel);
+.games-list{display:flex; flex-direction:column; gap:8px;}
+.game-card{
+  background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:10px 8px;
 }
-table{border-collapse:collapse; width:100%; min-width:480px;}
-thead th{
-  background:var(--panel-alt); color:var(--muted); font-size:.7rem; font-weight:500;
-  text-align:left; padding:10px 12px; position:sticky; top:0; white-space:nowrap;
-  border-bottom:1px solid var(--line); letter-spacing:.02em;
+.matchup-row{display:flex; align-items:center; gap:6px;}
+.pick-rect{
+  flex:1; min-width:0; display:flex; align-items:center; gap:6px;
+  border:1px solid var(--line); border-radius:5px; padding:8px 8px; cursor:pointer;
+  background:transparent; color:var(--chalk);
 }
-thead th:last-child{text-align:center;}
-tbody td{
-  padding:9px 12px; font-size:.86rem; border-bottom:1px solid var(--line); vertical-align:middle;
+.pick-rect.home{flex-direction:row-reverse; text-align:right;}
+.pick-rect.picked{background:var(--amber); border-color:var(--amber);}
+.pick-rect .team-name{
+  color:inherit; font-size:.8rem; font-weight:500; min-width:0; flex:1;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-family:'Inter',sans-serif;
 }
-tbody tr:last-child td{border-bottom:none;}
-tbody tr:nth-child(even) td.team{background:rgba(255,255,255,.02);}
-td.team input{
-  width:100%; border:none; background:transparent; color:var(--chalk); font-size:.86rem; padding:3px 0;
-  font-family:'Inter',sans-serif; min-width:0;
+.pick-rect.home .team-name{text-align:right;}
+.pick-rect .team-name.tbd{color:var(--muted); font-weight:400;}
+.pick-rect.picked .team-name{color:var(--amber-ink); font-weight:600;}
+.pick-rect .team-name-input{
+  border:none; background:transparent; color:inherit; font-size:.8rem; font-weight:500;
+  padding:0; min-width:0; width:100%; font-family:'Inter',sans-serif;
 }
-.team-cell{display:flex; align-items:center; gap:8px;}
+.pick-rect.home .team-name-input{text-align:right;}
+.pick-rect .team-name-input::placeholder{color:var(--muted);}
+.pick-rect.picked .team-name-input{color:var(--amber-ink); font-weight:600;}
+.pick-rect.picked .team-name-input::placeholder{color:var(--amber-ink);}
 .team-badge{
   flex:0 0 auto; width:26px; height:20px; border-radius:4px; display:none; align-items:center;
-  justify-content:center; font-family:'Oswald',sans-serif; font-size:.62rem; font-weight:600;
+  justify-content:center; font-family:'Oswald',sans-serif; font-size:.6rem; font-weight:600;
   letter-spacing:.01em;
 }
-td.team input::placeholder{color:var(--muted);}
-td.team input:focus{outline:none; border-bottom:1px solid var(--amber);}
-.pick-chips{display:flex; gap:5px;}
-.pick-chips button{
-  border:1px solid var(--line); background:transparent; color:var(--muted);
-  border-radius:3px; padding:6px 9px; font-size:.72rem; cursor:pointer; white-space:nowrap;
-  font-family:'Inter',sans-serif;
+.result-toggle{
+  flex:0 0 auto; width:32px; height:32px; border-radius:5px; border:1px solid var(--line);
+  background:transparent; color:var(--pending); font-size:.9rem; font-weight:700; cursor:pointer;
+  display:flex; align-items:center; justify-content:center; font-family:'Inter',sans-serif;
+  padding:0; margin:0 2px;
 }
-.pick-chips button.picked{background:var(--amber); border-color:var(--amber); color:var(--amber-ink); font-weight:600;}
-td.result-cell{text-align:center;}
-.result-check{
-  width:34px; height:34px; border-radius:9px; border:none; cursor:pointer; padding:0;
-  display:inline-flex; align-items:center; justify-content:center; position:relative;
-}
-.result-check svg{width:18px; height:18px; display:block;}
-.result-check.pending{background:transparent; box-shadow:inset 0 0 0 2px var(--line);}
-.result-check.correct{background:rgba(79,179,122,.12); color:var(--good);}
-.result-check.wrong{background:rgba(222,100,90,.12); color:var(--bad);}
-.remove{background:none; border:none; color:var(--muted); font-size:1rem; cursor:pointer; padding:2px 6px;}
+.result-toggle.correct{border-color:var(--good); background:rgba(79,179,122,.16); color:var(--good);}
+.result-toggle.wrong{border-color:var(--bad); background:rgba(222,100,90,.16); color:var(--bad);}
 .empty{color:var(--muted); text-align:center; padding:32px 10px; font-size:.85rem;}
 .share-row{display:flex; justify-content:center; margin-top:20px;}
 .share-btn{
@@ -143,12 +137,6 @@ td.result-cell{text-align:center;}
   color:var(--chalk); text-align:center; margin-bottom:12px; letter-spacing:.02em;
 }
 #captureArea.capturing .capture-heading{display:block;}
-#captureArea.capturing .table-wrap{overflow-x:visible;}
-#captureArea.capturing table{width:auto;}
-#captureArea.capturing thead th{position:static;}
-#captureArea.capturing table{border-collapse:separate; border-spacing:0;}
-#captureArea.capturing tbody td{border-right:none;}
-#captureArea.capturing .table-wrap{overflow:visible;}
 </style>
 </head>
 <body>
@@ -163,19 +151,7 @@ td.result-cell{text-align:center;}
     <div class="capture-heading" id="captureHeading"></div>
     <div class="section-title" id="weekStatsTitle">Estatísticas da semana</div>
     <div class="scoreboard" id="statsWeek"></div>
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Visitante</th>
-            <th>Mandante</th>
-            <th>Meu palpite</th>
-            <th>Resultado</th>
-          </tr>
-        </thead>
-        <tbody id="gamesBody"></tbody>
-      </table>
-    </div>
+    <div class="games-list" id="gamesBody"></div>
   </div>
   <div class="section-title season">Estatísticas da temporada inteira</div>
   <div class="scoreboard" id="statsSeason"></div>
@@ -361,12 +337,10 @@ function renderStats(){
   `;
 }
 
-const CHECK_SVG = '<svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-const CROSS_SVG = '<svg viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/></svg>';
-function resultIcon(status){
-  if(status === "correct") return {cls:"correct", svg:CHECK_SVG};
-  if(status === "wrong") return {cls:"wrong", svg:CROSS_SVG};
-  return {cls:"pending", svg:""};
+function badgeInfo(status){
+  if(status === "correct") return {cls:"correct", label:"Acerto"};
+  if(status === "wrong") return {cls:"wrong", label:"Erro"};
+  return {cls:"pending", label:"— Pendente"};
 }
 
 function renderGames(){
@@ -374,69 +348,59 @@ function renderGames(){
   const games = currentGames();
   body.innerHTML = "";
   if(games.length === 0){
-    body.innerHTML = `<tr><td colspan="4"><div class="empty">Nenhum jogo cadastrado nesta semana ainda.</div></td></tr>`;
+    body.innerHTML = `<div class="empty">Nenhum jogo cadastrado nesta semana ainda.</div>`;
     return;
   }
   games.forEach(g=>{
     const pick = getPick(g.id);
-    const tr = document.createElement("tr");
+    const card = document.createElement("div");
+    card.className = "game-card";
 
-    const tdA = document.createElement("td");
-    tdA.className = "team";
-    tdA.innerHTML = `<div class="team-cell"><span class="team-badge" id="badgeA"></span><input value="${escapeAttr(g.teamA)}" placeholder="Time A"></div>`;
-    const badgeA = tdA.querySelector(".team-badge");
+    const row = document.createElement("div");
+    row.className = "matchup-row";
+
+    const rectA = document.createElement("div");
+    rectA.className = "pick-rect away";
+    if(pick.pickWinner === "teamA") rectA.classList.add("picked");
+    rectA.innerHTML = `<span class="team-badge"></span>${g.week >= 19 ? `<input class="team-name-input" value="${escapeAttr(g.teamA)}" placeholder="Visitante">` : `<span class="team-name${g.teamA ? '' : ' tbd'}">${escapeAttr(g.teamA) || "A definir"}</span>`}`;
+    const badgeA = rectA.querySelector(".team-badge");
     setBadge(badgeA, g.teamA);
-    tdA.querySelector("input").oninput = (e)=>{
-      g.teamA = e.target.value; save();
-      chipBtnA.textContent = g.teamA || "Time A";
-      setBadge(badgeA, g.teamA);
-    };
-    tr.appendChild(tdA);
+    const inputA = rectA.querySelector("input");
+    if(inputA){
+      inputA.oninput = (e)=>{ g.teamA = e.target.value; save(); setBadge(badgeA, g.teamA); };
+      inputA.onclick = (e)=>{ e.stopPropagation(); };
+    }
+    rectA.onclick = ()=>{ setPick(g.id, {pickWinner: pick.pickWinner === "teamA" ? null : "teamA"}); renderGames(); };
+    row.appendChild(rectA);
 
-    const tdB = document.createElement("td");
-    tdB.className = "team";
-    tdB.innerHTML = `<div class="team-cell"><span class="team-badge" id="badgeB"></span><input value="${escapeAttr(g.teamB)}" placeholder="Time B"></div>`;
-    const badgeB = tdB.querySelector(".team-badge");
-    setBadge(badgeB, g.teamB);
-    tdB.querySelector("input").oninput = (e)=>{
-      g.teamB = e.target.value; save();
-      chipBtnB.textContent = g.teamB || "Time B";
-      setBadge(badgeB, g.teamB);
-    };
-    tr.appendChild(tdB);
-
-    const tdPick = document.createElement("td");
-    const chips = document.createElement("div");
-    chips.className = "pick-chips";
-    const chipBtnA = document.createElement("button");
-    chipBtnA.textContent = g.teamA || "Time A";
-    if(pick.pickWinner === "teamA") chipBtnA.classList.add("picked");
-    chipBtnA.onclick = ()=>{ setPick(g.id, {pickWinner: pick.pickWinner === "teamA" ? null : "teamA"}); renderGames(); };
-    chips.appendChild(chipBtnA);
-    const chipBtnB = document.createElement("button");
-    chipBtnB.textContent = g.teamB || "Time B";
-    if(pick.pickWinner === "teamB") chipBtnB.classList.add("picked");
-    chipBtnB.onclick = ()=>{ setPick(g.id, {pickWinner: pick.pickWinner === "teamB" ? null : "teamB"}); renderGames(); };
-    chips.appendChild(chipBtnB);
-    tdPick.appendChild(chips);
-    tr.appendChild(tdPick);
-
-    const tdResult = document.createElement("td");
-    tdResult.className = "result-cell";
-    const info = resultIcon(pick.resultStatus);
-    const rbtn = document.createElement("button");
-    rbtn.className = "result-check " + info.cls;
-    rbtn.innerHTML = info.svg;
-    rbtn.title = "Toque para alternar: Pendente → Acerto → Erro";
-    rbtn.onclick = ()=>{
+    const info = badgeInfo(pick.resultStatus);
+    const resultBtn = document.createElement("button");
+    resultBtn.className = "result-toggle " + info.cls;
+    resultBtn.textContent = pick.resultStatus === "correct" ? "✓" : pick.resultStatus === "wrong" ? "✗" : "–";
+    resultBtn.title = "Toque para alternar: Pendente → Acerto → Erro";
+    resultBtn.onclick = ()=>{
       const next = pick.resultStatus === null ? "correct" : pick.resultStatus === "correct" ? "wrong" : null;
       setPick(g.id, {resultStatus: next});
       renderAll();
     };
-    tdResult.appendChild(rbtn);
-    tr.appendChild(tdResult);
+    row.appendChild(resultBtn);
 
-    body.appendChild(tr);
+    const rectB = document.createElement("div");
+    rectB.className = "pick-rect home";
+    if(pick.pickWinner === "teamB") rectB.classList.add("picked");
+    rectB.innerHTML = `<span class="team-badge"></span>${g.week >= 19 ? `<input class="team-name-input" value="${escapeAttr(g.teamB)}" placeholder="Mandante">` : `<span class="team-name${g.teamB ? '' : ' tbd'}">${escapeAttr(g.teamB) || "A definir"}</span>`}`;
+    const badgeB = rectB.querySelector(".team-badge");
+    setBadge(badgeB, g.teamB);
+    const inputB = rectB.querySelector("input");
+    if(inputB){
+      inputB.oninput = (e)=>{ g.teamB = e.target.value; save(); setBadge(badgeB, g.teamB); };
+      inputB.onclick = (e)=>{ e.stopPropagation(); };
+    }
+    rectB.onclick = ()=>{ setPick(g.id, {pickWinner: pick.pickWinner === "teamB" ? null : "teamB"}); renderGames(); };
+    row.appendChild(rectB);
+
+    card.appendChild(row);
+    body.appendChild(card);
   });
 }
 
@@ -454,47 +418,17 @@ renderAll();
 
 document.getElementById("shareBtn").onclick = function(){
   const btn = this;
-  const boardLabel = (BOARD_DEFS.find(b=>b.id===state.currentBoard) || {}).label || "";
   const heading = document.getElementById("captureHeading");
   heading.textContent = "NFL Temporada 2026/27 — " + boardLabel + " — " + weekLabel(state.currentWeek);
   const area = document.getElementById("captureArea");
   area.classList.add("capturing");
-  const tw = area.querySelector(".table-wrap");
-  if(tw) tw.scrollLeft = 0;
-  const prevHtmlOverflow = document.documentElement.style.overflowX;
-  const prevBodyOverflow = document.body.style.overflowX;
-  document.documentElement.style.overflowX = "visible";
-  document.body.style.overflowX = "visible";
   btn.disabled = true;
   btn.textContent = "Gerando imagem...";
   const bg = getComputedStyle(document.body).backgroundColor;
-  const fullWidth = area.scrollWidth;
-  function cleanup(){
+  html2canvas(area, {backgroundColor: bg, scale: 2}).then(function(canvas){
     area.classList.remove("capturing");
-    document.documentElement.style.overflowX = prevHtmlOverflow;
-    document.body.style.overflowX = prevBodyOverflow;
     btn.disabled = false;
     btn.textContent = "📤 Baixar imagem dos palpites";
-  }
-  html2canvas(area, {
-    backgroundColor: bg, scale: 2, width: fullWidth, windowWidth: fullWidth,
-    x: 0, y: 0, scrollX: 0, scrollY: 0,
-    onclone: function(clonedDoc){
-      const style = clonedDoc.createElement("style");
-      style.textContent = [
-        "#captureArea .capture-heading{display:block !important;}",
-        "#captureArea .table-wrap{overflow:visible !important;}",
-        "#captureArea .table-wrap::-webkit-scrollbar{display:none !important; width:0 !important; height:0 !important;}",
-        "#captureArea table{width:auto !important; border-collapse:separate !important; border-spacing:0 !important;}",
-        "#captureArea thead th{position:static !important;}",
-        "#captureArea tbody td{border-right:none !important; box-shadow:none !important;}",
-        "#captureArea button{-webkit-appearance:none !important; appearance:none !important; outline:none !important;}",
-        "#captureArea button::-moz-focus-inner{border:0 !important; padding:0 !important;}",
-      ].join("\n");
-      clonedDoc.head.appendChild(style);
-    }
-  }).then(function(canvas){
-    cleanup();
     canvas.toBlob(function(blob){
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -506,7 +440,9 @@ document.getElementById("shareBtn").onclick = function(){
       URL.revokeObjectURL(url);
     });
   }).catch(function(){
-    cleanup();
+    area.classList.remove("capturing");
+    btn.disabled = false;
+    btn.textContent = "📤 Baixar imagem dos palpites";
     alert("Não foi possível gerar a imagem. Tente novamente.");
   });
 };
