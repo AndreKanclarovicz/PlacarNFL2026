@@ -200,6 +200,9 @@ main{flex:1; overflow-y:auto; padding:16px calc(14px + env(safe-area-inset-left,
   color:var(--chalk); text-align:center; margin-bottom:12px; letter-spacing:.02em;
 }
 #captureArea.capturing .capture-heading{display:block;}
+.result-toggle.tie{border-color:var(--amber); background:rgba(227,162,59,.16); color:var(--amber);}
+.result-toggle.tie.wrong{border-color:var(--bad); background:rgba(222,100,90,.16); color:var(--bad);}
+.hist-res.tie{border-color:var(--amber); background:rgba(227,162,59,.16); color:var(--amber);}
 </style>
 </head>
 <body>
@@ -235,7 +238,7 @@ main{flex:1; overflow-y:auto; padding:16px calc(14px + env(safe-area-inset-left,
       </div>
       <button class="sheet-close" id="sheetClose" aria-label="Fechar">✕</button>
     </div>
-    <div class="sheet-hint">@ = jogo fora · vs = jogo em casa · V/D = vitória/derrota · toque no adversário para abrir o histórico dele</div>
+    <div class="sheet-hint">@ = jogo fora · vs = jogo em casa · V/D/E = vitória/derrota/empate · toque no adversário para abrir o histórico dele</div>
     <div class="sheet-list" id="sheetList"></div>
   </div>
 </div>
@@ -526,11 +529,12 @@ function renderGames(){
     row.appendChild(rectA);
 
     const resultBtn = document.createElement("button");
-    resultBtn.className = "result-toggle" + (status === "correct" ? " correct" : status === "wrong" ? " wrong" : "");
-    resultBtn.textContent = status === "correct" ? "✓" : status === "wrong" ? "✗" : "–";
-    resultBtn.title = "Toque para marcar quem venceu de verdade";
+    const isTie = result === "tie";
+    resultBtn.className = "result-toggle" + (isTie ? " tie" : "") + (status === "correct" ? " correct" : status === "wrong" ? " wrong" : "");
+    resultBtn.textContent = isTie ? "=" : status === "correct" ? "✓" : status === "wrong" ? "✗" : "–";
+    resultBtn.title = "Toque para marcar o resultado real: time da esquerda → time da direita → empate → pendente";
     resultBtn.onclick = ()=>{
-      const next = result === null ? "teamA" : result === "teamA" ? "teamB" : null;
+      const next = result === null ? "teamA" : result === "teamA" ? "teamB" : result === "teamB" ? "tie" : null;
       setResult(g.id, next);
       renderAll();
     };
@@ -563,18 +567,20 @@ function computeStandings(){
     if(g.week > 18) return;
     const result = gameWinner(g.id);
     if(!result) return;
-    const winnerName = result === "teamA" ? g.teamA : g.teamB;
-    const loserName = result === "teamA" ? g.teamB : g.teamA;
-    const wKey = (winnerName||"").trim().toLowerCase();
-    const lKey = (loserName||"").trim().toLowerCase();
-    if(!wKey || !lKey) return;
-    if(!record[wKey]) record[wKey] = {w:0,l:0};
-    if(!record[lKey]) record[lKey] = {w:0,l:0};
+    const aKey = (g.teamA||"").trim().toLowerCase();
+    const bKey = (g.teamB||"").trim().toLowerCase();
+    if(!aKey || !bKey) return;
+    if(!record[aKey]) record[aKey] = {w:0,l:0,t:0};
+    if(!record[bKey]) record[bKey] = {w:0,l:0,t:0};
+    if(result === "tie"){ record[aKey].t++; record[bKey].t++; return; }
+    const wKey = result === "teamA" ? aKey : bKey;
+    const lKey = result === "teamA" ? bKey : aKey;
     record[wKey].w++;
     record[lKey].l++;
   });
   return record;
 }
+function recStr(r){ return r.w + "-" + r.l + (r.t ? "-" + r.t : ""); }
 
 function renderStandings(){
   const box = document.getElementById("standingsBody");
@@ -590,9 +596,9 @@ function renderStandings(){
     divBox.appendChild(title);
 
     const rows = teamKeys.map(key=>{
-      const rec = record[key] || {w:0,l:0};
-      return {key, w: rec.w, l: rec.l};
-    }).sort((a,b)=> b.w - a.w || a.l - b.l);
+      const rec = record[key] || {w:0,l:0,t:0};
+      return {key, w: rec.w, l: rec.l, t: rec.t || 0};
+    }).sort((a,b)=> (b.w + b.t/2) - (a.w + a.t/2) || a.l - b.l);
 
     rows.forEach(r=>{
       const rowEl = document.createElement("div");
@@ -611,7 +617,7 @@ function renderStandings(){
       rowEl.appendChild(name);
       const rec = document.createElement("span");
       rec.className = "division-record";
-      rec.textContent = r.w + "-" + r.l;
+      rec.textContent = recStr(r);
       rowEl.appendChild(rec);
       divBox.appendChild(rowEl);
     });
@@ -629,7 +635,7 @@ function buildTeamRows(key){
     const away = teamKeyOf(g.teamA)===key;
     const oppRaw = away ? g.teamB : g.teamA;
     const winner = gameWinner(g.id);
-    const res = winner ? (((winner==="teamA")===away) ? "V" : "D") : null;
+    const res = winner ? (winner==="tie" ? "E" : (((winner==="teamA")===away) ? "V" : "D")) : null;
     return {week:g.week, away:away, oppRaw:oppRaw, oppKey:teamKeyOf(oppRaw), res:res};
   };
   const rows = [];
@@ -644,10 +650,10 @@ function buildTeamRows(key){
 function openTeam(key){
   const sheet = document.getElementById("teamSheet");
   const display = TEAM_DISPLAY_NAME[key] || key;
-  const rec = computeStandings()[key] || {w:0,l:0};
+  const rec = computeStandings()[key] || {w:0,l:0,t:0};
   setBadge(document.getElementById("sheetBadge"), display);
   document.getElementById("sheetTitle").textContent = display;
-  document.getElementById("sheetRecord").textContent = "Temporada regular: " + rec.w + "-" + rec.l;
+  document.getElementById("sheetRecord").textContent = "Temporada regular: " + recStr(rec);
 
   const list = document.getElementById("sheetList");
   list.innerHTML = "";
@@ -687,6 +693,7 @@ function openTeam(key){
       name.textContent = TEAM_DISPLAY_NAME[r.oppKey] || (r.oppRaw||"").trim() || "A definir";
       opp.appendChild(name);
       if(r.res === "V"){ res.textContent = "V"; res.classList.add("win"); }
+      else if(r.res === "E"){ res.textContent = "E"; res.classList.add("tie"); }
       else if(r.res === "D"){ res.textContent = "D"; res.classList.add("loss"); }
       else { res.textContent = "–"; }
       if(TEAM_DISPLAY_NAME[r.oppKey]){
